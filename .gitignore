@@ -10,3 +10,5 @@ schema.graphql
 # variable data file directory
 /.var
 
+
+pgdata/
