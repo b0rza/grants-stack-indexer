@@ -5,8 +5,8 @@ services:
     build:
       context: .
       dockerfile: Dockerfile.index
-    ports:
-      - "8081:8080" # Map the port your web server uses
+    # ports:
+      # - "8081:8080" # Map the port your web server uses
     depends_on:
       - db
     environment:

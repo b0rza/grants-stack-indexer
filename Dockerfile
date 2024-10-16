@@ -16,7 +16,8 @@ COPY .prettierrc.json ./
 RUN npm run build
 RUN npm run lint
 
-EXPOSE 8080
+ARG PORT=3000
+EXPOSE $PORT
 
 RUN npm run test
 
