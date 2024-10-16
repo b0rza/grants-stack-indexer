@@ -2182,7 +2182,9 @@ export function getConfig(): Config {
     .string()
     .array()
     .default(["https://ipfs.io"])
-    .parse(JSON.parse(process.env.IPFS_GATEWAYS!));
+    .parse(
+      process.env.IPFS_GATEWAYS ? process.env.IPFS_GATEWAYS.split(",") : null
+    );
 
   const sentryDsn = z
     .union([z.string(), z.null()])
