@@ -269,7 +269,7 @@ const CHAINS: Chain[] = [
   {
     id: 11155420,
     name: "optimism-sepolia",
-    rpc: "https://sepolia.optimism.io/",
+    rpc: `https://optimism-sepolia.infura.io/v3/${process.env.INFURA_API_KEY!}`,
     pricesFromTimestamp: 1667354777,
     maxGetLogsRange: 0,
     tokens: [
@@ -373,12 +373,12 @@ const CHAINS: Chain[] = [
       {
         contractName: "AlloV2/Registry/V1",
         address: "0x4AAcca72145e1dF2aeC137E1f3C5E3D75DB8b5f3",
-        fromBlock: 111678968,
+        fromBlock: 18717297,
       },
       {
         contractName: "AlloV2/Allo/V1",
         address: "0x1133eA7Af70876e64665ecD07C0A0476d09465a1",
-        fromBlock: 111680064,
+        fromBlock: 18717297,
       },
     ],
   },
