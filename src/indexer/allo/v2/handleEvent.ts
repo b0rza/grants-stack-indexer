@@ -178,7 +178,9 @@ export async function handleEvent(
     },
   } = args;
 
+  console.log("ALLO V2 EVENT HANDLNG", event.name);
   switch (event.name) {
+
     // -- Allo V2 Profiles
     case "ProfileCreated": {
       const profileId = event.params.profileId;
@@ -272,33 +274,53 @@ export async function handleEvent(
     }
 
     case "PoolCreated": {
+      console.log("POOL CREATED: Handling PoolCreated event");
       const { pointer: metadataPointer } = event.params.metadata;
+      console.log("POOL CREATED: Metadata pointer:", metadataPointer);
+
       const { roundMetadata, applicationMetadata } = await fetchPoolMetadata(
         ipfsGet,
         metadataPointer
       );
+      console.log("POOL CREATED: Fetched round metadata:", roundMetadata);
+      console.log("POOL CREATED: Fetched application metadata:", applicationMetadata);
+
       const parsedMetadata = RoundMetadataSchema.safeParse(roundMetadata);
+      console.log("POOL CREATED: Parsed metadata success:", parsedMetadata.success);
 
       const poolId = event.params.poolId;
+      console.log("POOL CREATED: Pool ID:", poolId.toString());
+
       const { managerRole, adminRole } = generateRoundRoles(poolId);
+      console.log("POOL CREATED: Manager role:", managerRole);
+      console.log("POOL CREATED: Admin role:", adminRole);
+
       const strategyAddress = event.params.strategy;
+      console.log("POOL CREATED: Strategy address:", strategyAddress);
 
       const strategyId = await readContract({
         contract: "AlloV2/IStrategy/V1",
         address: strategyAddress,
         functionName: "getStrategyId",
       });
+      console.log("POOL CREATED: Strategy ID:", strategyId);
+
       const strategy = extractStrategyFromId(strategyId);
+      console.log("POOL CREATED: Extracted strategy:", strategy);
+
       let matchAmount = 0n;
       let matchAmountInUsd = 0;
 
       let matchTokenAddress = parseAddress(event.params.token);
+      console.log("POOL CREATED: Match token address:", matchTokenAddress);
 
       if (matchTokenAddress === ALLO_NATIVE_TOKEN) {
         matchTokenAddress = parseAddress(zeroAddress);
+        console.log("POOL CREATED: Match token address updated to zero address");
       }
 
       const token = getTokenForChain(chainId, matchTokenAddress);
+      console.log("POOL CREATED: Token for chain:", token);
 
       switch (strategy?.name) {
         case "allov2.DonationVotingMerkleDistributionDirectTransferStrategy":
@@ -542,6 +564,7 @@ export async function handleEvent(
         });
       }
 
+      console.log("POOL CREATED: PoolCreated processing complete");
       return changes;
     }
 
