@@ -180,7 +180,6 @@ export async function handleEvent(
 
   console.log("ALLO V2 EVENT HANDLNG", event.name);
   switch (event.name) {
-
     // -- Allo V2 Profiles
     case "ProfileCreated": {
       const profileId = event.params.profileId;
@@ -324,36 +323,42 @@ export async function handleEvent(
 
       switch (strategy?.name) {
         case "allov2.DonationVotingMerkleDistributionDirectTransferStrategy":
+          console.log("POOL CREATED: Subscribing to DonationVotingMerkleDistributionDirectTransferStrategy");
           subscribeToContract({
-            contract:
-              "AlloV2/DonationVotingMerkleDistributionDirectTransferStrategy/V1",
+            contract: "AlloV2/DonationVotingMerkleDistributionDirectTransferStrategy/V1",
             address: strategyAddress,
           });
           break;
         case "allov2.DirectGrantsSimpleStrategy":
+          console.log("POOL CREATED: Subscribing to DirectGrantsSimpleStrategy");
           subscribeToContract({
             contract: "AlloV2/DirectGrantsSimpleStrategy/V1",
             address: strategyAddress,
           });
           break;
         case "allov2.DirectGrantsLiteStrategy":
+          console.log("POOL CREATED: Subscribing to DirectGrantsLiteStrategy");
           subscribeToContract({
             contract: "AlloV2/DirectGrantsLiteStrategy/V1",
             address: strategyAddress,
           });
           break;
         case "allov2.EasyRPGFStrategy":
+          console.log("POOL CREATED: Subscribing to EasyRPGFStrategy");
           subscribeToContract({
             contract: "AlloV2/EasyRPGFStrategy/V1",
             address: strategyAddress,
           });
           break;
         case "allov2.DirectAllocationStrategy":
+          console.log("POOL CREATED: Subscribing to DirectAllocationStrategy");
           subscribeToContract({
             contract: "AlloV2/DirectAllocationStrategy/V1",
             address: strategyAddress,
           });
           break;
+        default:
+          console.log("POOL CREATED: Unknown strategy, no subscription made");
       }
 
       let applicationsStartTime: Date | null = null;
@@ -366,8 +371,8 @@ export async function handleEvent(
         strategy.name ===
           "allov2.DonationVotingMerkleDistributionDirectTransferStrategy"
       ) {
-        const contract =
-          "AlloV2/DonationVotingMerkleDistributionDirectTransferStrategy/V1";
+        console.log("POOL CREATED: Processing DonationVotingMerkleDistributionDirectTransferStrategy");
+        const contract = "AlloV2/DonationVotingMerkleDistributionDirectTransferStrategy/V1";
         const [
           registrationStartTimeResolved,
           registrationEndTimeResolved,
@@ -395,14 +400,18 @@ export async function handleEvent(
             functionName: "allocationEndTime",
           }),
         ]);
-        applicationsStartTime = getDateFromTimestamp(
-          registrationStartTimeResolved
-        );
+        applicationsStartTime = getDateFromTimestamp(registrationStartTimeResolved);
         applicationsEndTime = getDateFromTimestamp(registrationEndTimeResolved);
         donationsStartTime = getDateFromTimestamp(allocationStartTimeResolved);
         donationsEndTime = getDateFromTimestamp(allocationEndTimeResolved);
 
+        console.log("POOL CREATED: Applications start time:", applicationsStartTime);
+        console.log("POOL CREATED: Applications end time:", applicationsEndTime);
+        console.log("POOL CREATED: Donations start time:", donationsStartTime);
+        console.log("POOL CREATED: Donations end time:", donationsEndTime);
+
         if (parsedMetadata.success && token !== null) {
+          console.log("POOL CREATED: Calculating match amount");
           matchAmount = parseUnits(
             parsedMetadata.data.quadraticFundingConfig.matchingFundsAvailable.toString(),
             token.decimals
@@ -416,13 +425,17 @@ export async function handleEvent(
               event.blockNumber
             )
           ).amount;
+          console.log("POOL CREATED: Match amount:", matchAmount.toString());
+          console.log("POOL CREATED: Match amount in USD:", matchAmountInUsd);
+        } else {
+          console.log("POOL CREATED: Skipped match amount calculation due to invalid metadata or token");
         }
       } else if (
         strategy !== null &&
         (strategy.name === "allov2.DirectGrantsSimpleStrategy" ||
           strategy.name === "allov2.DirectGrantsLiteStrategy")
       ) {
-        // const contract = "AlloV2/DirectGrantsSimpleStrategy/V1";
+        console.log("POOL CREATED: Processing DirectGrants strategy");
         const contract =
           strategy.name === "allov2.DirectGrantsSimpleStrategy"
             ? "AlloV2/DirectGrantsSimpleStrategy/V1"
@@ -440,16 +453,20 @@ export async function handleEvent(
               functionName: "registrationEndTime",
             }),
           ]);
-        applicationsStartTime = getDateFromTimestamp(
-          registrationStartTimeResolved
-        );
+        applicationsStartTime = getDateFromTimestamp(registrationStartTimeResolved);
         applicationsEndTime = getDateFromTimestamp(registrationEndTimeResolved);
+
+        console.log("POOL CREATED: Applications start time:", applicationsStartTime);
+        console.log("POOL CREATED: Applications end time:", applicationsEndTime);
+      } else {
+        console.log("POOL CREATED: Unknown strategy, skipping time calculations");
       }
 
       const fundedAmount = event.params.amount;
       let fundedAmountInUsd = 0;
 
       if (token !== null && fundedAmount > 0n) {
+        console.log("POOL CREATED: Calculating funded amount in USD");
         fundedAmountInUsd = (
           await convertToUSD(
             priceProvider,
@@ -459,6 +476,10 @@ export async function handleEvent(
             event.blockNumber
           )
         ).price;
+        console.log("POOL CREATED: Funded amount:", fundedAmount.toString());
+        console.log("POOL CREATED: Funded amount in USD:", fundedAmountInUsd);
+      } else {
+        console.log("POOL CREATED: Skipped funded amount calculation due to invalid token or zero amount");
       }
 
       const tx = await rpcClient.getTransaction({
@@ -466,6 +487,7 @@ export async function handleEvent(
       });
 
       const createdBy = tx.from;
+      console.log("POOL CREATED: Created by:", createdBy);
 
       const newRound: NewRound = {
         chainId,
